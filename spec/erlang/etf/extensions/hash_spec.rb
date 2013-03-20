@@ -36,7 +36,7 @@ describe Erlang::ETF::Extensions::Hash do
       context 'when empty' do
         let(:keyvalues) { [] }
 
-        it { should eq(
+        it("should eq {:bert, :dict, []}") { should eq(
           Erlang::ETF::SmallTuple.new([
             Erlang::ETF::SmallAtom.new("bert"),
             Erlang::ETF::SmallAtom.new("dict"),
@@ -48,7 +48,7 @@ describe Erlang::ETF::Extensions::Hash do
       context 'when arity is less than 256' do
         let(:keyvalues) { [:a, 1] }
 
-        it { should eq(
+        it("should eq {:bert, :dict, [{:a, 1}]}") { should eq(
           Erlang::ETF::SmallTuple.new([
             Erlang::ETF::SmallAtom.new("bert"),
             Erlang::ETF::SmallAtom.new("dict"),
@@ -76,7 +76,7 @@ describe Erlang::ETF::Extensions::Hash do
           elements
         }
 
-        it { should eq(
+        it("should eq {:bert, :dict, [{1, []}, {2, []}, ..., {256, []}]}") { should eq(
           Erlang::ETF::SmallTuple.new([
             Erlang::ETF::SmallAtom.new("bert"),
             Erlang::ETF::SmallAtom.new("dict"),

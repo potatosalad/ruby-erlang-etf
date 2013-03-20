@@ -48,7 +48,8 @@ describe Erlang::ETF::Extensions::ErlangTuple do
       context 'when arity is greater than or equal to 256' do
         let(:elements) { [[]] * 256 }
 
-        it { should eq(Erlang::ETF::LargeTuple.new([Erlang::ETF::Nil.new] * 256)) }
+        its(:arity) { should eq(256) }
+        it { should be_a(Erlang::ETF::LargeTuple) }
       end
     end
   end
