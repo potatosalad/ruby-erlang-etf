@@ -6,8 +6,13 @@ module Erlang
     # --- | ----- | --------
     # 105 | Arity | Elements
     #
-    # Same as SMALL_TUPLE_EXT with the exception that Arity is an
+    # Same as [`SMALL_TUPLE_EXT`] with the exception that `Arity` is an
     # unsigned 4 byte integer in big endian format.
+    #
+    # (see [`LARGE_TUPLE_EXT`])
+    #
+    # [`SMALL_TUPLE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_TUPLE_EXT
+    # [`LARGE_TUPLE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#LARGE_TUPLE_EXT
     #
     class LargeTuple
       include Term

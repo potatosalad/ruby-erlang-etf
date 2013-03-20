@@ -6,22 +6,27 @@ module Erlang
     # --- | --- | ---- | -------- | ------
     # 114 | Len | Node | Creation | ID ...
     #
-    # Node and Creation are as in REFERENCE_EXT.
+    # `Node` and `Creation` are as in [`REFERENCE_EXT`].
     #
-    # ID contains a sequence of big-endian unsigned integers (4 bytes
-    # each, so N' is a multiple of 4), but should be regarded as
+    # `ID` contains a sequence of big-endian unsigned integers (4 bytes
+    # each, so `N'` is a multiple of 4), but should be regarded as
     # uninterpreted data.
     #
-    # N' = 4 * Len.
+    # `N' = 4 * Len.`
     #
-    # In the first word (four bytes) of ID, only 18 bits are
-    # significant, the rest should be 0. In Creation, only 2 bits are
+    # In the first word (four bytes) of `ID`, only 18 bits are
+    # significant, the rest should be 0. In `Creation`, only 2 bits are
     # significant, the rest should be 0.
     #
-    # NEW_REFERENCE_EXT was introduced with distribution version 4. In
-    # version 4, N' should be at most 12.
+    # [`NEW_REFERENCE_EXT`] was introduced with distribution version 4. In
+    # version 4, `N'` should be at most 12.
     #
-    # See REFERENCE_EXT).
+    # See [`REFERENCE_EXT`]).
+    #
+    # (see [`NEW_REFERENCE_EXT`])
+    #
+    # [`REFERENCE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#REFERENCE_EXT
+    # [`NEW_REFERENCE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NEW_REFERENCE_EXT
     #
     class NewReference
       include Term

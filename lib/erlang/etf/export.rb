@@ -6,12 +6,20 @@ module Erlang
     # --- | ------ | -------- | -----
     # 113 | Module | Function | Arity
     #
-    # This term is the encoding for external funs: fun M:F/A.
+    # This term is the encoding for external funs: `fun M:F/A`.
     #
-    # Module and Function are atoms (encoded using ATOM_EXT,
-    # SMALL_ATOM_EXT or ATOM_CACHE_REF).
+    # `Module` and `Function` are atoms (encoded using [`ATOM_EXT`],
+    # [`SMALL_ATOM_EXT`] or [`ATOM_CACHE_REF`]).
     #
-    # Arity is an integer encoded using SMALL_INTEGER_EXT.
+    # `Arity` is an integer encoded using [`SMALL_INTEGER_EXT`].
+    #
+    # (see [`EXPORT_EXT`])
+    #
+    # [`ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_EXT
+    # [`SMALL_ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_ATOM_EXT
+    # [`ATOM_CACHE_REF`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_CACHE_REF
+    # [`SMALL_INTEGER_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_INTEGER_EXT
+    # [`EXPORT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#EXPORT_EXT
     #
     class Export
       include Term

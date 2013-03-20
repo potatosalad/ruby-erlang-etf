@@ -11,15 +11,30 @@ describe Erlang::ETF::Extensions::ErlangString do
     describe '__erlang_type__' do
       subject { instance.__erlang_type__ }
 
-      let(:args) {[ "test" ]}
-      it { should eq(:string) }
+      context 'simple string' do
+        let(:args) {[ "test" ]}
+        it { should eq(:string) }
+      end
+
+      context 'when bytesize larger than 1 << 16' do
+        let(:args) {[ "a" * (1 << 16) ]}
+        it { should eq(:list) }
+      end
     end
 
     describe '__erlang_evolve__' do
       subject { instance.__erlang_evolve__ }
 
-      let(:args) {[ "test" ]}
-      it { should eq(Erlang::ETF::String.new("test")) }
+      context 'simple string' do
+        let(:args) {[ "test" ]}
+        it { should eq(Erlang::ETF::String.new("test")) }
+      end
+
+      context 'when bytesize larger than 1 << 16' do
+        let(:args) {[ "a" * (1 << 16) ]}
+        its(:len) { should eq(1 << 16) }
+        it { should be_a(Erlang::ETF::List) }
+      end
     end
   end
 

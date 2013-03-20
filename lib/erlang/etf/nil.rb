@@ -2,11 +2,15 @@ module Erlang
   module ETF
 
     #
-    # 1
-    # ---
-    # 106
+    # | 1   |
+    # | --- |
+    # | 106 |
     #
-    # The representation for an empty list, i.e. the Erlang syntax [].
+    # The representation for an empty list, i.e. the Erlang syntax `[]`.
+    #
+    # (see [`NIL_EXT`])
+    #
+    # [`NIL_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NIL_EXT
     #
     class Nil
       include Term

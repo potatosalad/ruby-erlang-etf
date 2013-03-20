@@ -14,8 +14,6 @@ module Erlang
           ETF::Pid.new(node.to_s.intern.__erlang_evolve__, id, serial, creation)
         end
 
-        module ClassMethods
-        end
       end
     end
   end

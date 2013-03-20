@@ -20,8 +20,6 @@ module Erlang
           ::Erlang::Tuple[:bert, :true].__erlang_evolve__
         end
 
-        module ClassMethods
-        end
       end
     end
   end

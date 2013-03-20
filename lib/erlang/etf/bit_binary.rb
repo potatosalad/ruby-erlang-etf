@@ -2,16 +2,20 @@ module Erlang
   module ETF
 
     #
-    # 1  | 4   | 1    | Len
-    # -- | --- | ---- | ----
-    # 77 | Len | Bits | Data
+    # 1   | 4   | 1    | Len
+    # --- | --- | ---- | ----
+    # 77  | Len | Bits | Data
     #
     # This term represents a bitstring whose length in bits is not a
     # multiple of 8 (created using the bit syntax in R12B and later).
-    # The Len field is an unsigned 4 byte integer (big endian).
-    # The Bits field is the number of bits that are used in the last
+    # The `Len` field is an unsigned 4 byte integer (big endian).
+    # The `Bits` field is the number of bits that are used in the last
     # byte in the data field, counting from the most significant bit
     # towards the least significant.
+    #
+    # (see [`BIT_BINARY_EXT`])
+    #
+    # [`BIT_BINARY_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#BIT_BINARY_EXT
     #
     class BitBinary
       include Term

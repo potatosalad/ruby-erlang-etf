@@ -6,9 +6,14 @@ module Erlang
     # --- | --- | --------
     # 119 | Len | AtomName
     #
-    # An atom is stored with a 1 byte unsigned length, followed by Len
-    # bytes containing the AtomName encoded in UTF-8. Longer atoms
-    # encoded in UTF-8 can be represented using ATOM_UTF8_EXT.
+    # An atom is stored with a 1 byte unsigned length, followed by `Len`
+    # bytes containing the `AtomName` encoded in UTF-8. Longer atoms
+    # encoded in UTF-8 can be represented using [`ATOM_UTF8_EXT`].
+    #
+    # (see [`SMALL_ATOM_UTF8_EXT`])
+    #
+    # [`ATOM_UTF8_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_UTF8_EXT
+    # [`SMALL_ATOM_UTF8_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_ATOM_UTF8_EXT
     #
     class SmallAtomUTF8
       include Term

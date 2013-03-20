@@ -6,9 +6,13 @@ module Erlang
     # --- | ----- | --------
     # 104 | Arity | Elements
     #
-    # SMALL_TUPLE_EXT encodes a tuple. The Arity field is an unsigned
+    # [`SMALL_TUPLE_EXT`] encodes a tuple. The `Arity` field is an unsigned
     # byte that determines how many element that follows in the
-    # Elements section.
+    # `Elements` section.
+    #
+    # (see [`SMALL_TUPLE_EXT`])
+    #
+    # [`SMALL_TUPLE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_TUPLE_EXT
     #
     class SmallTuple
       include Term

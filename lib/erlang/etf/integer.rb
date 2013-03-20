@@ -2,11 +2,15 @@ module Erlang
   module ETF
 
     #
-    # 1  | 4
-    # -- | ---
-    # 98 | Int
+    # 1   | 4
+    # --- | ---
+    # 98  | Int
     #
     # Signed 32 bit integer in big-endian format (i.e. MSB first)
+    #
+    # (see [`INTEGER_EXT`])
+    #
+    # [`INTEGER_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#INTEGER_EXT
     #
     class Integer
       include Term

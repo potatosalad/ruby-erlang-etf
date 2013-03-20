@@ -6,7 +6,6 @@ module Erlang
 
       # @private
       class ::Object
-        extend  Erlang::ETF::Extensions::Object::ClassMethods
         include Erlang::ETF::Extensions::Object
       end
     end
@@ -26,37 +25,31 @@ module Erlang
 
       # @private
       class ::Erlang::Export
-        extend  Erlang::ETF::Extensions::ErlangExport::ClassMethods
         include Erlang::ETF::Extensions::ErlangExport
       end
 
       # @private
       class ::Erlang::List
-        extend  Erlang::ETF::Extensions::ErlangList::ClassMethods
         include Erlang::ETF::Extensions::ErlangList
       end
 
       # @private
       class ::Erlang::Nil
-        extend  Erlang::ETF::Extensions::ErlangNil::ClassMethods
         include Erlang::ETF::Extensions::ErlangNil
       end
 
       # @private
       class ::Erlang::Pid
-        extend  Erlang::ETF::Extensions::ErlangPid::ClassMethods
         include Erlang::ETF::Extensions::ErlangPid
       end
 
       # @private
       class ::Erlang::String
-        extend  Erlang::ETF::Extensions::ErlangString::ClassMethods
         include Erlang::ETF::Extensions::ErlangString
       end
 
       # @private
       class ::Erlang::Tuple
-        extend  Erlang::ETF::Extensions::ErlangTuple::ClassMethods
         include Erlang::ETF::Extensions::ErlangTuple
       end
     end
@@ -82,73 +75,61 @@ module Erlang
 
       # @private
       class ::Array
-        extend  Erlang::ETF::Extensions::Array::ClassMethods
         include Erlang::ETF::Extensions::Array
       end
 
       # @private
       class ::BigDecimal
-        extend  Erlang::ETF::Extensions::BigDecimal::ClassMethods
         include Erlang::ETF::Extensions::BigDecimal
       end
 
       # @private
       class ::FalseClass
-        extend  Erlang::ETF::Extensions::FalseClass::ClassMethods
         include Erlang::ETF::Extensions::FalseClass
       end
 
       # @private
       class ::Float
-        extend  Erlang::ETF::Extensions::Float::ClassMethods
         include Erlang::ETF::Extensions::Float
       end
 
       # @private
       class ::Hash
-        extend  Erlang::ETF::Extensions::Hash::ClassMethods
         include Erlang::ETF::Extensions::Hash
       end
 
       # @private
       class ::Integer
-        extend  Erlang::ETF::Extensions::Integer::ClassMethods
         include Erlang::ETF::Extensions::Integer
       end
 
       # @private
       class ::NilClass
-        extend  Erlang::ETF::Extensions::NilClass::ClassMethods
         include Erlang::ETF::Extensions::NilClass
       end
 
       # @private
       class ::Regexp
-        extend  Erlang::ETF::Extensions::Regexp::ClassMethods
         include Erlang::ETF::Extensions::Regexp
       end
 
       # @private
       class ::String
-        extend  Erlang::ETF::Extensions::String::ClassMethods
         include Erlang::ETF::Extensions::String
       end
 
       # @private
       class ::Symbol
-        extend  Erlang::ETF::Extensions::Symbol::ClassMethods
         include Erlang::ETF::Extensions::Symbol
       end
 
       # @private
       class ::Time
-        extend  Erlang::ETF::Extensions::Time::ClassMethods
         include Erlang::ETF::Extensions::Time
       end
 
       # @private
       class ::TrueClass
-        extend  Erlang::ETF::Extensions::TrueClass::ClassMethods
         include Erlang::ETF::Extensions::TrueClass
       end
 

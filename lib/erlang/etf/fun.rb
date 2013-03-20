@@ -6,22 +6,36 @@ module Erlang
     # --- | ------- | --- | ------ | ----- | ---- | -------------
     # 117 | NumFree | Pid | Module | Index | Uniq | Free vars ...
     #
-    # Pid
-    #   is a process identifier as in PID_EXT. It represents the
+    # `Pid`
+    # > is a process identifier as in [`PID_EXT`]. It represents the
     #   process in which the fun was created.
-    # Module
-    #   is an encoded as an atom, using ATOM_EXT, SMALL_ATOM_EXT or
-    #   ATOM_CACHE_REF. This is the module that the fun is
+    #
+    # `Module`
+    # > is an encoded as an atom, using [`ATOM_EXT`], [`SMALL_ATOM_EXT`] or
+    #   [`ATOM_CACHE_REF`]. This is the module that the fun is
     #   implemented in.
-    # Index
-    #   is an integer encoded using SMALL_INTEGER_EXT or INTEGER_EXT.
+    #
+    # `Index`
+    # > is an integer encoded using [`SMALL_INTEGER_EXT`] or [`INTEGER_EXT`].
     #   It is typically a small index into the module's fun table.
-    # Uniq
-    #   is an integer encoded using SMALL_INTEGER_EXT or INTEGER_EXT.
-    #   Uniq is the hash value of the parse for the fun.
-    # Free vars
-    #   is NumFree number of terms, each one encoded according to its
+    #
+    # `Uniq`
+    # > is an integer encoded using [`SMALL_INTEGER_EXT`] or [`INTEGER_EXT`].
+    #   `Uniq` is the hash value of the parse for the fun.
+    #
+    # `Free vars`
+    # > is `NumFree` number of terms, each one encoded according to its
     #   type.
+    #
+    # (see [`FUN_EXT`])
+    #
+    # [`PID_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#PID_EXT
+    # [`ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_EXT
+    # [`SMALL_ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_ATOM_EXT
+    # [`ATOM_CACHE_REF`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_CACHE_REF
+    # [`SMALL_INTEGER_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_INTEGER_EXT
+    # [`INTEGER_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#INTEGER_EXT
+    # [`FUN_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#FUN_EXT
     #
     class Fun
       include Term

@@ -27,8 +27,6 @@ module Erlang
           force_encoding(UTF8_ENCODING).encode!
         end
 
-        module ClassMethods
-        end
       end
     end
   end

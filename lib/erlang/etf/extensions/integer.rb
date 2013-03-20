@@ -40,8 +40,6 @@ module Erlang
           end
         end
 
-        module ClassMethods
-        end
       end
     end
   end

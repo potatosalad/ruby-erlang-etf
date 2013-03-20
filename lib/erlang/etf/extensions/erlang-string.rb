@@ -6,16 +6,25 @@ module Erlang
 
       module ErlangString
 
+        STRING_MAX = (+1 << 16) - 1
+
         def __erlang_type__
-          :string
+          if bytesize > STRING_MAX
+            :list
+          else
+            :string
+          end
         end
 
         def __erlang_evolve__
-          ETF::String.new(self)
+          case __erlang_type__
+          when :list
+            ETF::List.new(unpack('C*'))
+          when :string
+            ETF::String.new(self)
+          end
         end
 
-        module ClassMethods
-        end
       end
     end
   end

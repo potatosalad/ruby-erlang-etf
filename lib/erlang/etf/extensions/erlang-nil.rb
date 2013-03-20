@@ -14,8 +14,6 @@ module Erlang
           ETF::Nil.new
         end
 
-        module ClassMethods
-        end
       end
     end
   end

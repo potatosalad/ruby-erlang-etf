@@ -7,10 +7,14 @@ module Erlang
     # 100 | Len | AtomName
     #
     # An atom is stored with a 2 byte unsigned length in big-endian
-    # order, followed by Len numbers of 8 bit Latin1 characters that
-    # forms the AtomName.
+    # order, followed by `Len` numbers of 8 bit Latin1 characters that
+    # forms the `AtomName`.
     #
-    # Note: The maximum allowed value for Len is 255.
+    # **Note:** The maximum allowed value for `Len` is 255.
+    #
+    # (see [`ATOM_EXT`])
+    #
+    # [`ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_EXT
     #
     class Atom
       include Term

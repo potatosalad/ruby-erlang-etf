@@ -11,7 +11,12 @@ module Erlang
     # range 0-255) more efficiently over the distribution. Since the
     # Length field is an unsigned 2 byte integer (big endian),
     # implementations must make sure that lists longer than 65535
-    # elements are encoded as LIST_EXT.
+    # elements are encoded as [`LIST_EXT`].
+    #
+    # (see [`STRING_EXT`])
+    #
+    # [`LIST_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#LIST_EXT
+    # [`STRING_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#STRING_EXT
     #
     class String
       include Term

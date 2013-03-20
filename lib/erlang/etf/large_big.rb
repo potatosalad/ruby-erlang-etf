@@ -2,12 +2,17 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4 | 1    | n
-    # --- | - | ---- | ---------------
-    # 111 | n | Sign | d(0) ... d(n-1)
+    # 1   | 4   | 1    | n
+    # --- | --- | ---- | ---------------
+    # 111 | n   | Sign | d(0) ... d(n-1)
     #
-    # Same as SMALL_BIG_EXT with the difference that the length field
-    # is an unsigned 4 byte integer.
+    # Same as [`SMALL_BIG_EXT`] with the difference that the length
+    # field is an unsigned 4 byte integer.
+    #
+    # (see [`LARGE_BIG_EXT`])
+    #
+    # [`SMALL_BIG_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_BIG_EXT
+    # [`LARGE_BIG_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#LARGE_BIG_EXT
     #
     class LargeBig
       include Term

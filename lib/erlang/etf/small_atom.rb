@@ -6,13 +6,20 @@ module Erlang
     # --- | --- | --------
     # 115 | Len | AtomName
     #
-    # An atom is stored with a 1 byte unsigned length, followed by Len
-    # numbers of 8 bit Latin1 characters that forms the AtomName.
-    # Longer atoms can be represented by ATOM_EXT.
+    # An atom is stored with a 1 byte unsigned length, followed by `Len`
+    # numbers of 8 bit Latin1 characters that forms the `AtomName`.
+    # Longer atoms can be represented by [`ATOM_EXT`].
     #
-    # Note the SMALL_ATOM_EXT was introduced in erts version 5.7.2 and
-    # require an exchange of the DFLAG_SMALL_ATOM_TAGS distribution
-    # flag in the distribution handshake.
+    # **Note** the [`SMALL_ATOM_EXT`] was introduced in erts version 5.7.2 and
+    # require an exchange of the [`DFLAG_SMALL_ATOM_TAGS`] distribution
+    # flag in the [distribution handshake].
+    #
+    # (see [`SMALL_ATOM_EXT`])
+    #
+    # [`ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_EXT
+    # [`DFLAG_SMALL_ATOM_TAGS`]: http://erlang.org/doc/apps/erts/erl_dist_protocol.html#dflags
+    # [distribution handshake]: http://erlang.org/doc/apps/erts/erl_dist_protocol.html#distribution_handshake
+    # [`SMALL_ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_ATOM_EXT
     #
     class SmallAtom
       include Term

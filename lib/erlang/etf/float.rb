@@ -4,9 +4,9 @@ module Erlang
   module ETF
 
     #
-    # 1  | 31
-    # -- | ------------
-    # 99 | Float String
+    # 1   | 31
+    # --- | ------------
+    # 99  | Float String
     #
     # A float is stored in string format. the format used in sprintf
     # to format the float is "%.20e" (there are more bytes allocated
@@ -14,7 +14,12 @@ module Erlang
     # "%lf".
     #
     # This term is used in minor version 0 of the external format; it
-    # has been superseded by NEW_FLOAT_EXT .
+    # has been superseded by [`NEW_FLOAT_EXT`].
+    #
+    # (see [`FLOAT_EXT`])
+    #
+    # [`NEW_FLOAT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NEW_FLOAT_EXT
+    # [`FLOAT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#FLOAT_EXT
     #
     class Float
       include Term

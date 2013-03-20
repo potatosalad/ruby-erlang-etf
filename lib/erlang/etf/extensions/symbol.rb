@@ -37,8 +37,6 @@ module Erlang
           to_s.to_utf8_binary
         end
 
-        module ClassMethods
-        end
       end
     end
   end

@@ -1,4 +1,4 @@
-# Erlang::Etf
+# Erlang::ETF
 
 [![Build Status](https://travis-ci.org/potatosalad/erlang-etf.png)](https://travis-ci.org/potatosalad/erlang-etf)
 
@@ -26,14 +26,14 @@ $ gem install erlang-etf
 
 ## Usage
 
-### Erlang.term_to_binary(term)
+### `Erlang.term_to_binary(term)`
 
 ```ruby
 Erlang.term_to_binary(:atom)
 # => "\x83s\x04atom"
 ```
 
-### Erlang.binary_to_term(binary)
+### `Erlang.binary_to_term(binary)`
 
 ```ruby
 Erlang.binary_to_term("\x83s\x04atom")

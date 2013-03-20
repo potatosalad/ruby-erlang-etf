@@ -16,8 +16,6 @@ module Erlang
           __erlang_evolve__.serialize(buffer)
         end
 
-        module ClassMethods
-        end
       end
     end
   end

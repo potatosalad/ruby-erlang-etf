@@ -12,8 +12,6 @@ module Erlang
           ETF::NewFloat.new(self)
         end
 
-        module ClassMethods
-        end
       end
     end
   end

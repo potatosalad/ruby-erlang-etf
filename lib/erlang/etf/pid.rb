@@ -2,14 +2,20 @@ module Erlang
   module ETF
 
     #
-    # 1   | N    | 4  | 4      | 1
-    # --- | ---- | -- | ------ | --------
-    # 103 | Node | ID | Serial | Creation
+    # 1   | N    | 4   | 4      | 1
+    # --- | ---- | --- | ------ | --------
+    # 103 | Node | ID  | Serial | Creation
     #
-    # Encode a process identifier object (obtained from spawn/3 or
-    # friends). The ID and Creation fields works just like in
-    # REFERENCE_EXT, while the Serial field is used to improve safety.
-    # In ID, only 15 bits are significant; the rest should be 0.
+    # Encode a process identifier object (obtained from [`spawn/3`] or
+    # friends). The `ID` and `Creation` fields works just like in
+    # [`REFERENCE_EXT`], while the `Serial` field is used to improve safety.
+    # In `ID`, only 15 bits are significant; the rest should be 0.
+    #
+    # (see [`PID_EXT`])
+    #
+    # [`spawn/3`]: http://erlang.org/doc/man/erlang.html#spawn-3
+    # [`REFERENCE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#REFERENCE_EXT
+    # [`PID_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#PID_EXT
     #
     class Pid
       include Term

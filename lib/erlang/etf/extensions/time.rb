@@ -21,8 +21,6 @@ module Erlang
           ::Erlang::Tuple[:bert, :time, to_i / 1_000_000, to_i % 1_000_000, usec].__erlang_evolve__
         end
 
-        module ClassMethods
-        end
       end
     end
   end

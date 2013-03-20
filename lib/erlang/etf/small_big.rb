@@ -2,16 +2,24 @@ module Erlang
   module ETF
 
     #
-    # 1   | 1 | 1    | n
-    # --- | - | ---- | ---------------
-    # 110 | n | Sign | d(0) ... d(n-1)
+    # 1   | 1   | 1    | n
+    # --- | --- | ---- | ---------------
+    # 110 | n   | Sign | d(0) ... d(n-1)
     #
-    # Bignums are stored in unary form with a Sign byte that is 0 if
+    # Bignums are stored in unary form with a `Sign` byte that is 0 if
     # the binum is positive and 1 if is negative. The digits are
-    # stored with the LSB byte stored first. To calculate the integer
-    # the following formula can be used:
+    # stored with the LSB byte stored first.
+    #
+    # To calculate the integer the following formula can be used:
+    #
+    # ```
     # B = 256
     # (d0*B^0 + d1*B^1 + d2*B^2 + ... d(N-1)*B^(n-1))
+    # ```
+    #
+    # (see [`SMALL_BIG_EXT`])
+    #
+    # [`SMALL_BIG_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_BIG_EXT
     #
     class SmallBig
       include Term

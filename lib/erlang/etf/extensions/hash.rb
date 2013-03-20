@@ -24,8 +24,6 @@ module Erlang
           end].__erlang_evolve__
         end
 
-        module ClassMethods
-        end
       end
     end
   end
