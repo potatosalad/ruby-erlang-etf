@@ -26,6 +26,7 @@ module Erlang
       NEW_FLOAT_EXT       =  70.freeze
       ATOM_UTF8_EXT       = 118.freeze
       SMALL_ATOM_UTF8_EXT = 119.freeze
+      COMPRESSED_EXT      =  80.freeze
     end
   end
 end
@@ -90,7 +91,10 @@ module Erlang
 
       def self.deserialize(buffer)
         key, = buffer.read(1).unpack(::Binary::Protocol::UINT8_PACK)
-        if MAP.key?(key)
+        if key == COMPRESSED_EXT
+          new_buffer = self.uncompress_binary(buffer)
+          self.deserialize(new_buffer)
+        elsif MAP.key?(key)
           MAP[key].deserialize(buffer)
         else
           raise NotImplementedError, "unknown Erlang External Format tag #{key.inspect} (see http://erlang.org/doc/apps/erts/erl_ext_dist.html)"
@@ -99,6 +103,29 @@ module Erlang
 
       def self.evolve(buffer)
         deserialize(buffer).__ruby_evolve__
+      end
+
+      # 1   | 4                | N
+      # --- | ---------------- | -------------------
+      # 80  | UncompressedSize | Zlib-compressedData
+      #
+      # Uncompressed Size (unsigned 32 bit integer in big-endian 
+      # byte order) is the size of the data before it was compressed. 
+      # The compressed data has the following format when it has been expanded:
+      #
+      # 1    | Uncompressed Size
+      # ---- | ------------------
+      # Tag  | Data 
+      #
+      def self.uncompress_binary(buffer)
+        uncompressed_size, = buffer.read(4).unpack(::Binary::Protocol::UINT32BE_PACK)
+        uncompressed_data = Zlib::Inflate.inflate(buffer.read())
+
+        if uncompressed_size == uncompressed_data.bytesize
+          StringIO.new(uncompressed_data)
+        else
+          raise Zlib::DataError, "UncompressedSize value did not match the size of the uncompressed data"
+        end
       end
     end
   end
