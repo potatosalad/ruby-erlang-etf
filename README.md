@@ -1,6 +1,4 @@
-# Erlang::ETF
-
-[![Build Status](https://travis-ci.org/potatosalad/erlang-etf.png)](https://travis-ci.org/potatosalad/erlang-etf)
+# Erlang::ETF [![Build Status](https://travis-ci.org/potatosalad/erlang-etf.png)](https://travis-ci.org/potatosalad/erlang-etf) [![Coverage Status](https://coveralls.io/repos/potatosalad/erlang-etf/badge.png)](https://coveralls.io/r/potatosalad/erlang-etf)
 
 Erlang [External Term Format](http://erlang.org/doc/apps/erts/erl_ext_dist.html) (ETF) for Ruby.
 
@@ -31,6 +29,13 @@ $ gem install erlang-etf
 ```ruby
 Erlang.term_to_binary(:atom)
 # => "\x83s\x04atom"
+```
+
+Compression is optional and valid arguments are `false`, `true`, and integers `0-9`.
+
+```ruby
+Erlang.term_to_binary([1] * 100, compressed: true)
+# => "\x83P\x00\x00\x00\xCEx\x9C\xCBa``HId\x1C\x1E0\v\x00\xE85'\x83"
 ```
 
 ### `Erlang.binary_to_term(binary)`
