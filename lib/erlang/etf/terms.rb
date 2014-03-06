@@ -1,7 +1,12 @@
 module Erlang
   module ETF
+
+    #
+    # See [`erts/emulator/beam/external.h`]
+    #
+    # [`erts/emulator/beam/external.h`]: https://github.com/erlang/otp/blob/master/erts/emulator/beam/external.h
+    #
     module Terms
-      ATOM_CACHE_REF      =  82.freeze # not implemented
       SMALL_INTEGER_EXT   =  97.freeze
       INTEGER_EXT         =  98.freeze
       FLOAT_EXT           =  99.freeze
@@ -27,7 +32,14 @@ module Erlang
       ATOM_UTF8_EXT       = 118.freeze
       SMALL_ATOM_UTF8_EXT = 119.freeze
       MAP_EXT             = 116.freeze
-      COMPRESSED_EXT      =  80.freeze
+
+      DIST_HEADER             =  68.freeze # not implemented
+      ATOM_CACHE_REF          =  82.freeze # not implemented
+      ATOM_INTERNAL_REF2      =  73.freeze # not implemented
+      ATOM_INTERNAL_REF3      =  75.freeze # not implemented
+      BINARY_INTERNAL_REF     =  74.freeze # not implemented
+      BIT_BINARY_INTERNAL_REF =  76.freeze # not implemented
+      COMPRESSED              =  80.freeze
     end
   end
 end
@@ -39,6 +51,7 @@ require "erlang/etf/atom"
 require "erlang/etf/atom_utf8"
 require "erlang/etf/binary"
 require "erlang/etf/bit_binary"
+require "erlang/etf/compressed"
 require "erlang/etf/export"
 require "erlang/etf/float"
 require "erlang/etf/fun"
@@ -65,7 +78,7 @@ module Erlang
   module ETF
     module Terms
       MAP = {}
-      # MAP[ATOM_CACHE_REF]    = undefined
+
       MAP[SMALL_INTEGER_EXT]   = ETF::SmallInteger
       MAP[INTEGER_EXT]         = ETF::Integer
       MAP[FLOAT_EXT]           = ETF::Float
@@ -92,12 +105,19 @@ module Erlang
       MAP[SMALL_ATOM_UTF8_EXT] = ETF::SmallAtomUTF8
       MAP[MAP_EXT]             = ETF::Map
 
+      # MAP[DIST_HEADER]             = NotImplementedError
+      # MAP[ATOM_CACHE_REF]          = NotImplementedError
+      # MAP[ATOM_INTERNAL_REF2]      = NotImplementedError
+      # MAP[ATOM_INTERNAL_REF3]      = NotImplementedError
+      # MAP[BINARY_INTERNAL_REF]     = NotImplementedError
+      # MAP[BIT_BINARY_INTERNAL_REF] = NotImplementedError
+      MAP[COMPRESSED]              = ETF::Compressed
+
+      MAP.freeze
+
       def self.deserialize(buffer)
         key, = buffer.read(1).unpack(::Binary::Protocol::UINT8_PACK)
-        if key == COMPRESSED_EXT
-          new_buffer = self.uncompress_binary(buffer)
-          self.deserialize(new_buffer)
-        elsif MAP.key?(key)
+        if MAP.key?(key)
           MAP[key].deserialize(buffer)
         else
           raise NotImplementedError, "unknown Erlang External Format tag #{key.inspect} (see http://erlang.org/doc/apps/erts/erl_ext_dist.html)"
@@ -106,29 +126,6 @@ module Erlang
 
       def self.evolve(buffer)
         deserialize(buffer).__ruby_evolve__
-      end
-
-      # 1   | 4                | N
-      # --- | ---------------- | -------------------
-      # 80  | UncompressedSize | Zlib-compressedData
-      #
-      # Uncompressed Size (unsigned 32 bit integer in big-endian 
-      # byte order) is the size of the data before it was compressed. 
-      # The compressed data has the following format when it has been expanded:
-      #
-      # 1    | Uncompressed Size
-      # ---- | ------------------
-      # Tag  | Data 
-      #
-      def self.uncompress_binary(buffer)
-        uncompressed_size, = buffer.read(4).unpack(::Binary::Protocol::UINT32BE_PACK)
-        uncompressed_data = Zlib::Inflate.inflate(buffer.read())
-
-        if uncompressed_size == uncompressed_data.bytesize
-          StringIO.new(uncompressed_data)
-        else
-          raise Zlib::DataError, "UncompressedSize value did not match the size of the uncompressed data"
-        end
       end
     end
   end

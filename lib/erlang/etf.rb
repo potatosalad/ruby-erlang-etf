@@ -12,9 +12,13 @@ module Erlang
 
     ERLANG_MAGIC_BYTE = 131.chr.freeze
 
-    def encode(term, buffer = "")
+    def encode(term, buffer = "", options = {})
       buffer << ERLANG_MAGIC_BYTE
-      term.__erlang_dump__(buffer)
+      if options[:compressed]
+        Compressed.new(term.__erlang_evolve__, options[:compressed]).serialize(buffer)
+      else
+        term.__erlang_dump__(buffer)
+      end
     end
 
     def decode(buffer)
@@ -33,8 +37,15 @@ module Erlang
     ETF.decode(buffer)
   end
 
-  def self.term_to_binary(term, buffer = "")
-    ETF.encode(term, buffer)
+  def self.term_to_binary(term, buffer_or_options = "", options = nil)
+    if buffer_or_options.kind_of?(::Hash)
+      buffer = options || ""
+      options = buffer_or_options
+    else
+      buffer = buffer_or_options
+    end
+    options ||= {}
+    ETF.encode(term, buffer, options)
   end
 
 end
