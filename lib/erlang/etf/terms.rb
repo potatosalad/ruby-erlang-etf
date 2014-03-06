@@ -26,6 +26,7 @@ module Erlang
       NEW_FLOAT_EXT       =  70.freeze
       ATOM_UTF8_EXT       = 118.freeze
       SMALL_ATOM_UTF8_EXT = 119.freeze
+      MAP_EXT             = 116.freeze
     end
   end
 end
@@ -44,6 +45,7 @@ require "erlang/etf/integer"
 require "erlang/etf/large_big"
 require "erlang/etf/large_tuple"
 require "erlang/etf/list"
+require "erlang/etf/map"
 require "erlang/etf/new_float"
 require "erlang/etf/new_fun"
 require "erlang/etf/new_reference"
@@ -87,6 +89,7 @@ module Erlang
       MAP[NEW_FLOAT_EXT]       = ETF::NewFloat
       MAP[ATOM_UTF8_EXT]       = ETF::AtomUTF8
       MAP[SMALL_ATOM_UTF8_EXT] = ETF::SmallAtomUTF8
+      MAP[MAP_EXT]             = ETF::Map
 
       def self.deserialize(buffer)
         key, = buffer.read(1).unpack(::Binary::Protocol::UINT8_PACK)

@@ -14,6 +14,7 @@ end
 
 require "erlang/etf/extensions/erlang-export"
 require "erlang/etf/extensions/erlang-list"
+require "erlang/etf/extensions/erlang-map"
 require "erlang/etf/extensions/erlang-nil"
 require "erlang/etf/extensions/erlang-pid"
 require "erlang/etf/extensions/erlang-string"
@@ -31,6 +32,11 @@ module Erlang
       # @private
       class ::Erlang::List
         include Erlang::ETF::Extensions::ErlangList
+      end
+
+      # @private
+      class ::Erlang::Map
+        include Erlang::ETF::Extensions::ErlangMap
       end
 
       # @private

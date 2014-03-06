@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "binary-protocol"
-  spec.add_dependency "erlang-terms"
+  spec.add_dependency "erlang-terms", ">= 1.1.0"
 
   spec.add_development_dependency "bundler", "~> 1.3"
   spec.add_development_dependency "rake"

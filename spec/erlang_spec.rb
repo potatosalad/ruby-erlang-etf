@@ -67,7 +67,10 @@ describe Erlang do
 
     Erlang::Export.new(:erlang, :now, 0),
     Erlang::Pid.new(:'node@host', 100, 10, 1),
-    Erlang::String.new("test")
+    Erlang::String.new("test"),
+    Erlang::Map[],
+    Erlang::Map[:atom, 1],
+    Erlang::Map[Erlang::Map[:atom, 1], 2]
   ]
 
   roundtrip_variables.each do |roundtrip_variable|
