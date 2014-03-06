@@ -21,6 +21,10 @@ describe Erlang do
     expect(term).to eq(Erlang.binary_to_term(Erlang.term_to_binary(term)))
   end
 
+  def roundtrip_compressed(term, compression)
+    expect(term).to eq(Erlang.binary_to_term(Erlang.term_to_binary(term, compressed: compression)))
+  end
+
   roundtrip_variables = [
     1,
     1.0,
@@ -76,6 +80,16 @@ describe Erlang do
   roundtrip_variables.each do |roundtrip_variable|
     it "roundtrips #{roundtrip_variable.inspect}" do
       roundtrip(roundtrip_variable)
+    end
+  end
+
+  [false, true, *Erlang::ETF::Compressed::LEVEL_RANGE].each do |compression|
+    context "when compression is #{compression}" do
+      roundtrip_variables.each do |roundtrip_variable|
+        it "roundtrips #{roundtrip_variable.inspect}" do
+          roundtrip_compressed(roundtrip_variable, compression)
+        end
+      end
     end
   end
 end
