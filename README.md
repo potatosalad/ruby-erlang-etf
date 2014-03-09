@@ -1,4 +1,4 @@
-# Erlang::ETF [![Build Status](https://travis-ci.org/potatosalad/erlang-etf.png)](https://travis-ci.org/potatosalad/erlang-etf) [![Coverage Status](https://coveralls.io/repos/potatosalad/erlang-etf/badge.png)](https://coveralls.io/r/potatosalad/erlang-etf)
+# Erlang::ETF [![Build Status](https://travis-ci.org/potatosalad/erlang-etf.png)](https://travis-ci.org/potatosalad/erlang-etf) [![Coverage Status](https://coveralls.io/repos/potatosalad/erlang-etf/badge.png?branch=develop)](https://coveralls.io/r/potatosalad/erlang-etf?branch=develop)
 
 Erlang [External Term Format](http://erlang.org/doc/apps/erts/erl_ext_dist.html) (ETF) for Ruby.
 
