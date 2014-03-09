@@ -2,6 +2,8 @@
 
 Erlang [External Term Format](http://erlang.org/doc/apps/erts/erl_ext_dist.html) (ETF) for Ruby.
 
+*Note:* Please see the [erlang-terms](https://github.com/potatosalad/erlang-terms) gem for more information about the Erlang-to-Ruby type mappings (for example, `Erlang::Pid`).
+
 ## Installation
 
 Add this line to your application's Gemfile:
