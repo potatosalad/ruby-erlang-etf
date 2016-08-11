@@ -2,11 +2,11 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4    | N    | N
-    # --- | ---- | ---- | ------
-    # 116 | Size | Keys | Values
+    # 1   | 4     | N
+    # --- | ----- | -----
+    # 116 | Arity | Pairs
     #
-    # The Size specifies the number of keys and values that
+    # The Size specifies the number of key-values Pairs that
     # follows the size descriptor.
     #
     # (see [`MAP_EXT`])
@@ -25,12 +25,9 @@ module Erlang
 
       deserialize do |buffer|
         size, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        self.keys = []
+        self.keys, self.values = [], []
         size.times do
-          self.keys << Terms.deserialize(buffer)
-        end
-        self.values = []
-        size.times do
+          self.keys   << Terms.deserialize(buffer)
           self.values << Terms.deserialize(buffer)
         end
         self
