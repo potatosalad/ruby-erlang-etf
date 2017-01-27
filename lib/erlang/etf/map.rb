@@ -18,10 +18,9 @@ module Erlang
 
       uint8 :tag, always: Terms::MAP_EXT
 
-      uint32be :size, always: -> { keys.size }
+      uint32be :size, always: -> { elements.size/2 }
 
-      term :keys,   type: :array
-      term :values, type: :array
+      term :elements, type: :array
 
       deserialize do |buffer|
         size, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
@@ -38,9 +37,8 @@ module Erlang
 
       finalize
 
-      def initialize(keys, values)
-        @keys   = keys
-        @values = values
+      def initialize(elements)
+        @elements = elements
       end
 
       def __ruby_evolve__
