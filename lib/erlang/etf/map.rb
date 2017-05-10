@@ -16,7 +16,7 @@ module Erlang
     class Map
       include Term
 
-      uint8 :tag, always: Terms::MAP_EXT
+      uint8 :tag, always: Terms::MAP_EXT 
 
       uint32be :size, always: -> { elements.size/2 }
 
@@ -24,15 +24,11 @@ module Erlang
 
       deserialize do |buffer|
         size, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        self.keys = []
-        size.times do
-          self.keys << Terms.deserialize(buffer)
+        self.elements = []
+
+        (size*2).times do
+          self.elements << Terms.deserialize(buffer)
         end
-        self.values = []
-        size.times do
-          self.values << Terms.deserialize(buffer)
-        end
-        self
       end
 
       finalize
@@ -41,8 +37,9 @@ module Erlang
         @elements = elements
       end
 
+      
       def __ruby_evolve__
-        ::Erlang::Map[keys.map(&:__ruby_evolve__).zip(values.map(&:__ruby_evolve__))]
+        ::Erlang::Map[*elements.map(&:__ruby_evolve__)]
       end
     end
   end
