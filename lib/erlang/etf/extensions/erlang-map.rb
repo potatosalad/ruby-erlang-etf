@@ -12,11 +12,9 @@ module Erlang
 
         def __erlang_evolve__
           if size == 0
-            ETF::Map.new([], [])
+            ETF::Map.new([])
           else
-            ETF::Map.new(*map do |(key, value)|
-              [key.__erlang_evolve__, value.__erlang_evolve__]
-            end.transpose)
+            ETF::Map.new(map.map {|(key, value)| [key.__erlang_evolve__, value.__erlang_evolve__]}.flatten)
           end
         end
 

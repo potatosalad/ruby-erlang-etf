@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4    | N    | N
-    # --- | ---- | ---- | ------
-    # 116 | Size | Keys | Values
+    # 1   | 4    | N    
+    # --- | ---- | ---- 
+    # 116 | Size | Pairs
     #
     # The Size specifies the number of keys and values that
     # follows the size descriptor.
@@ -16,35 +16,30 @@ module Erlang
     class Map
       include Term
 
-      uint8 :tag, always: Terms::MAP_EXT
+      uint8 :tag, always: Terms::MAP_EXT 
 
-      uint32be :size, always: -> { keys.size }
+      uint32be :size, always: -> { elements.size/2 }
 
-      term :keys,   type: :array
-      term :values, type: :array
+      term :elements, type: :array
 
       deserialize do |buffer|
         size, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        self.keys = []
-        size.times do
-          self.keys << Terms.deserialize(buffer)
+        self.elements = []
+
+        (size*2).times do
+          self.elements << Terms.deserialize(buffer)
         end
-        self.values = []
-        size.times do
-          self.values << Terms.deserialize(buffer)
-        end
-        self
       end
 
       finalize
 
-      def initialize(keys, values)
-        @keys   = keys
-        @values = values
+      def initialize(elements)
+        @elements = elements
       end
 
+      
       def __ruby_evolve__
-        ::Erlang::Map[keys.map(&:__ruby_evolve__).zip(values.map(&:__ruby_evolve__))]
+        ::Erlang::Map[*elements.map(&:__ruby_evolve__)]
       end
     end
   end
