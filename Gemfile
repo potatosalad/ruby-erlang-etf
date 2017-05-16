@@ -11,10 +11,12 @@ end
 
 group :test do
   gem "simplecov", require: false
+  gem 'rspec-its'
   if ENV['CI']
     gem 'coveralls', require: false
   end
 end
+
 
 # Specify your gem's dependencies in erlang-etf.gemspec
 gemspec

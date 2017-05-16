@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4    | N    | N
-    # --- | ---- | ---- | ------
-    # 116 | Size | Keys | Values
+    # 1   | 4    | N    
+    # --- | ---- | ---- 
+    # 116 | Size | Pairs
     #
     # The Size specifies the number of keys and values that
     # follows the size descriptor.
