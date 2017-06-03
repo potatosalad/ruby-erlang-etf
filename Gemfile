@@ -9,8 +9,6 @@ platforms :ruby do
   end
 end
 
-gem 'erlang-terms', path: '../erlang-terms'
-
 group :test do
   gem 'minitest-focus', require: false
   gem 'minitest-perf', require: false
