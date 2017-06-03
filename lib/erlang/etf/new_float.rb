@@ -1,12 +1,10 @@
-require 'bigdecimal'
-
 module Erlang
   module ETF
 
     #
-    # 1   | 8
-    # --- | ----------
-    # 70  | IEEE Float
+    # | 1   | 8          |
+    # | --- | ---------- |
+    # | 70  | IEEE Float |
     #
     # A float is stored as 8 bytes in big-endian IEEE format.
     #
@@ -17,20 +15,33 @@ module Erlang
     # [`NEW_FLOAT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NEW_FLOAT_EXT
     #
     class NewFloat
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::NEW_FLOAT_EXT
+      DOUBLEBE = Erlang::ETF::Term::DOUBLEBE
 
-      doublebe :float
+      class << self
+        def [](term)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term)
+        end
 
-      finalize
-
-      def initialize(float)
-        @float = float
+        def erlang_load(buffer)
+          float, = buffer.read(8).unpack(DOUBLEBE)
+          term = Erlang::Float[float]
+          return new(term)
+        end
       end
 
-      def __ruby_evolve__
-        float
+      def initialize(term)
+        raise ArgumentError, "term must be of type Erlang::Float" if not Erlang.is_float(term) or term.old
+        @term = term
+      end
+
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << NEW_FLOAT_EXT
+        buffer << [@term.data].pack(DOUBLEBE)
+        return buffer
       end
     end
   end

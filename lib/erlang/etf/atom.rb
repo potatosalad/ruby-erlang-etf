@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 2   | Len
-    # --- | --- | --------
-    # 100 | Len | AtomName
+    # | 1   | 2   | Len      |
+    # | --- | --- | -------- |
+    # | 100 | Len | AtomName |
     #
     # An atom is stored with a 2 byte unsigned length in big-endian
     # order, followed by `Len` numbers of 8 bit Latin1 characters that
@@ -17,54 +17,34 @@ module Erlang
     # [`ATOM_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#ATOM_EXT
     #
     class Atom
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::ATOM_EXT
+      UINT16BE = Erlang::ETF::Term::UINT16BE
 
-      uint16be :len, default: 0 do
-        string :atom_name
+      class << self
+        def [](term)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term) if not term.kind_of?(Erlang::Atom)
+          return new(term)
+        end
+
+        def erlang_load(buffer)
+          size, = buffer.read(2).unpack(UINT16BE)
+          data = buffer.read(size)
+          return new(Erlang::Atom[data])
+        end
       end
 
-      undef deserialize_atom_name
-      # @private
-      def deserialize_atom_name(buffer)
-        self.atom_name = buffer.read(len).from_utf8_binary
+      def initialize(term)
+        raise ArgumentError, "term must be of type Erlang::Atom" if not term.kind_of?(Erlang::Atom)
+        @term = term
       end
 
-      undef serialize_atom_name
-      # @private
-      def serialize_atom_name(buffer)
-        buffer << atom_name.to_utf8_binary
-      end
-
-      finalize
-
-      # Instantiate the new atom.
-      #
-      # @example Instantiate the atom.
-      #   Erlang::ETF::Atom.new("test")
-      #   # => #<Erlang::ETF::Atom @tag=100 @len=4 @atom_name="test">
-      #
-      # @param [ ::String ] atom_name The `AtomName` as a string.
-      #
-      # @since 1.0.0
-      def initialize(atom_name)
-        @atom_name = atom_name
-        @len = atom_name.to_s.bytesize
-      end
-
-      # Evolve to native ruby.
-      #
-      # @example Evolve to native ruby.
-      #   atom = Erlang::ETF::Atom.new("test")
-      #   atom.__ruby_evolve__
-      #   # => :test
-      #
-      # @return [ ::Symbol ] The `AtomName` as a symbol.
-      #
-      # @since 1.0.0
-      def __ruby_evolve__
-        atom_name.intern
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << ATOM_EXT
+        buffer << [@term.size].pack(UINT16BE)
+        buffer << Erlang::ETF::Term.binary_encoding(@term.data)
+        return buffer
       end
     end
   end

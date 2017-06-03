@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4   | Len
-    # --- | --- | ----
-    # 109 | Len | Data
+    # | 1   | 4   | Len  |
+    # | --- | --- | ---- |
+    # | 109 | Len | Data |
     #
     # Binaries are generated with bit syntax expression or with
     # [`list_to_binary/1`], [`term_to_binary/1`], or as input from
@@ -19,32 +19,33 @@ module Erlang
     # [`BINARY_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#BINARY_EXT
     #
     class Binary
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::BINARY_EXT
+      UINT32BE = Erlang::ETF::Term::UINT32BE
 
-      uint32be :len, default: 0 do
-        string :data
+      class << self
+        def [](term)
+          term = Erlang.from(term) if not term.kind_of?(Erlang::Binary)
+          return new(term)
+        end
+
+        def erlang_load(buffer)
+          size, = buffer.read(4).unpack(UINT32BE)
+          data = buffer.read(size)
+          return new(Erlang::Binary[data])
+        end
       end
 
-      undef deserialize_data
-      def deserialize_data(buffer)
-        self.data = buffer.read(len).from_utf8_binary
+      def initialize(term)
+        raise ArgumentError, "term must be of type Erlang::Binary" if not term.kind_of?(Erlang::Binary)
+        @term = term
       end
 
-      undef serialize_data
-      def serialize_data(buffer)
-        buffer << data.to_utf8_binary
-      end
-
-      finalize
-
-      def initialize(data)
-        @data = data
-      end
-
-      def __ruby_evolve__
-        data
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << BINARY_EXT
+        buffer << [@term.bytesize].pack(UINT32BE)
+        buffer << Erlang::ETF::Term.binary_encoding(@term.data)
+        return buffer
       end
     end
   end

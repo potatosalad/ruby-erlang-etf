@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4    | 1     | 16   | 4     | 4       | N1     | N2       | N3      | N4  | N5
-    # --- | ---- | ----- | ---- | ----- | ------- | ------ | -------- | ------- | --- | ---------
-    # 112 | Size | Arity | Uniq | Index | NumFree | Module | Oldindex | OldUniq | Pid | Free Vars
+    # | 1   | 4    | 1     | 16   | 4     | 4       | N1     | N2       | N3      | N4  | N5        |
+    # | --- | ---- | ----- | ---- | ----- | ------- | ------ | -------- | ------- | --- | --------- |
+    # | 112 | Size | Arity | Uniq | Index | NumFree | Module | Oldindex | OldUniq | Pid | Free Vars |
     #
     # This is the new encoding of internal funs:
     #
@@ -60,60 +60,83 @@ module Erlang
     # [`NEW_FUN_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NEW_FUN_EXT
     #
     class NewFun
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::NEW_FUN_EXT
+      UINT8     = Erlang::ETF::Term::UINT8
+      UINT32BE  = Erlang::ETF::Term::UINT32BE
+      UINT128BE = Erlang::ETF::Term::UINT128BE
+      HEAD      = (UINT32BE + UINT8 + UINT128BE + UINT32BE + UINT32BE).freeze
 
-      uint32be :size, default: 0, inclusive: true do
-        uint8 :arity
-        string :uniq
-        uint32be :index
-        uint32be :num_free, always: -> { free_vars.size }
-        term :mod
-        term :old_index
-        term :old_uniq
-        term :pid
-        term :free_vars, type: :array
-      end
-
-      undef deserialize_uniq
-      def deserialize_uniq(buffer)
-        self.uniq = buffer.read(16).unpack(UINT8_PACK + '*')
-      end
-
-      undef serialize_uniq
-      def serialize_uniq(buffer)
-        buffer << uniq.pack(UINT8_PACK + '*')
-      end
-
-      deserialize do |buffer|
-        deserialize_size(buffer)
-        deserialize_arity(buffer)
-        deserialize_uniq(buffer)
-        deserialize_index(buffer)
-        num_free, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        deserialize_mod(buffer)
-        deserialize_old_index(buffer)
-        deserialize_old_uniq(buffer)
-        deserialize_pid(buffer)
-        self.free_vars = []
-        num_free.times do
-          self.free_vars << Terms.deserialize(buffer)
+      class << self
+        def [](term, arity = nil, uniq = nil, index = nil, mod = nil, old_index = nil, old_uniq = nil, pid = nil, free_vars = nil)
+          return new(term, arity, uniq, index, mod, old_index, old_uniq, pid, free_vars)
         end
-        self
+
+        def erlang_load(buffer)
+          _, arity, uniq_hi, uniq_lo, index, num_free = buffer.read(29).unpack(HEAD)
+          uniq = (uniq_hi << 64) + uniq_lo
+          mod       = Erlang::ETF.read_term(buffer)
+          old_index = Erlang::ETF.read_term(buffer)
+          old_uniq  = Erlang::ETF.read_term(buffer)
+          pid       = Erlang::ETF.read_term(buffer)
+          free_vars = Array.new(num_free); num_free.times { |i| free_vars[i] = Erlang::ETF.read_term(buffer) }
+          term      = Erlang::Function[arity: Erlang.from(arity), uniq: Erlang.from(uniq), index: Erlang.from(index), mod: Erlang.from(mod), old_index: Erlang.from(old_index), old_uniq: Erlang.from(old_uniq), pid: Erlang.from(pid), free_vars: Erlang.from(free_vars)]
+          return new(term, arity, uniq, index, mod, old_index, old_uniq, pid, free_vars)
+        end
       end
 
-      finalize
+      def initialize(term, arity = nil, uniq = nil, index = nil, mod = nil, old_index = nil, old_uniq = nil, pid = nil, free_vars = nil)
+        raise ArgumentError, "term must be of type Erlang::Function" if not term.kind_of?(Erlang::Function) or not term.new_function?
+        @term      = term
+        @arity     = arity
+        @uniq      = uniq
+        @index     = index
+        @mod       = mod
+        @old_index = old_index
+        @old_uniq  = old_uniq
+        @pid       = pid
+        @free_vars = free_vars
+      end
 
-      def initialize(arity, uniq, index, mod, old_index, old_uniq, pid, free_vars = [])
-        self.arity     = arity
-        self.uniq      = uniq
-        self.index     = index
-        self.mod       = mod
-        self.old_index = old_index
-        self.old_uniq  = old_uniq
-        self.pid       = pid
-        self.free_vars = free_vars
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << NEW_FUN_EXT
+        size      = 0
+        arity     = @arity     || @term.arity
+        uniq      = @uniq      || @term.uniq
+        index     = @index     || @term.index
+        free_vars = @free_vars || @term.free_vars
+        num_free  = free_vars.length
+        sizestart = buffer.bytesize
+        buffer << [size, arity, uniq >> 64, uniq, index, num_free].pack(HEAD)
+        Erlang::ETF.write_term(@mod       || @term.mod,       buffer)
+        Erlang::ETF.write_term(@old_index || @term.old_index, buffer)
+        Erlang::ETF.write_term(@old_uniq  || @term.old_uniq,  buffer)
+        Erlang::ETF.write_term(@pid       || @term.pid,       buffer)
+        num_free.times { |i| Erlang::ETF.write_term(free_vars[i], buffer) }
+        sizeend   = buffer.bytesize
+        size      = sizeend - sizestart
+        buffer.setbyte(sizestart + 0, size >> 24)
+        buffer.setbyte(sizestart + 1, size >> 16)
+        buffer.setbyte(sizestart + 2, size >> 8)
+        buffer.setbyte(sizestart + 3, size)
+        return buffer
+      end
+
+      def inspect
+        if @arity.nil? and @uniq.nil? and @index.nil? and @mod.nil? and @old_index.nil? and @old_uniq.nil? and @pid.nil? and @free_vars.nil?
+          return super
+        else
+          return "#{self.class}[#{@term.inspect}, #{@arity.inspect}, #{@uniq.inspect}, #{@index.inspect}, #{@mod.inspect}, #{@old_index.inspect}, #{@old_uniq.inspect}, #{@pid.inspect}, #{@free_vars.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@arity, @uniq, @index, @mod, @old_index, @old_uniq, @pid, @free_vars) if not @arity.nil? or not @uniq.nil? or not @index.nil? or not @mod.nil? or not @old_index.nil? or not @old_uniq.nil? or not @pid.nil? or not @free_vars.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
+        end
       end
     end
   end

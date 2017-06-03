@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 1   | 1    | n
-    # --- | --- | ---- | ---------------
-    # 110 | n   | Sign | d(0) ... d(n-1)
+    # | 1   | 1   | 1    | n               |
+    # | --- | --- | ---- | --------------- |
+    # | 110 | n   | Sign | d(0) ... d(n-1) |
     #
     # Bignums are stored in unary form with a `Sign` byte that is 0 if
     # the binum is positive and 1 if is negative. The digits are
@@ -22,45 +22,36 @@ module Erlang
     # [`SMALL_BIG_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#SMALL_BIG_EXT
     #
     class SmallBig
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::SMALL_BIG_EXT
+      UINT8 = Erlang::ETF::Term::UINT8
+      HEAD  = (UINT8 + UINT8).freeze
 
-      uint8 :n, default: 0 do
-        uint8 :sign, always: -> { (integer >= 0) ? 0 : 1 }
-        string :integer
+      class << self
+        def [](term)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term)
+        end
+
+        def erlang_load(buffer)
+          n, sign, = buffer.read(2).unpack(HEAD)
+          integer = Erlang::Binary.decode_unsigned(buffer.read(n), :little)
+          integer = -integer if sign == 1
+          return new(integer)
+        end
       end
 
-      undef serialize_integer
-
-      def serialize_integer(buffer)
-        start = buffer.bytesize
-        buffer << [integer.abs.to_s(2).reverse!].pack(BIN_LSB_PACK)
-        self.n = buffer.bytesize - start
-        buffer
+      def initialize(term)
+        raise ArgumentError, "term must be of type Integer" if not Erlang.is_integer(term)
+        @term = term
       end
 
-      undef after_serialize_n
-
-      def after_serialize_n(buffer)
-        buffer[@n_start, BYTES_8] = serialize_n ""
-      end
-
-      deserialize do |buffer|
-        deserialize_n(buffer)
-        sign, = buffer.read(BYTES_8).unpack(UINT8_PACK)
-        self.integer = buffer.read(n).unpack(BIN_LSB_PACK).at(0).reverse!.to_i(2) * ((sign == 0) ? 1 : -1)
-        self
-      end
-
-      finalize
-
-      def initialize(integer)
-        @integer = integer
-      end
-
-      def __ruby_evolve__
-        integer
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << SMALL_BIG_EXT
+        buffer << [Erlang::ETF.intlog2div8(@term), (@term < 0) ? 1 : 0].pack(HEAD)
+        buffer << Erlang::Binary.encode_unsigned(@term.abs, :little)
+        return buffer
       end
     end
   end

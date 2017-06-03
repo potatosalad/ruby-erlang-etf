@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4       | N1  | N2     | N3    | N4   | N5
-    # --- | ------- | --- | ------ | ----- | ---- | -------------
-    # 117 | NumFree | Pid | Module | Index | Uniq | Free vars ...
+    # | 1   | 4       | N1  | N2     | N3    | N4   | N5            |
+    # | --- | ------- | --- | ------ | ----- | ---- | ------------- |
+    # | 117 | NumFree | Pid | Module | Index | Uniq | Free vars ... |
     #
     # `Pid`
     # > is a process identifier as in [`PID_EXT`]. It represents the
@@ -38,43 +38,65 @@ module Erlang
     # [`FUN_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#FUN_EXT
     #
     class Fun
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::FUN_EXT
+      UINT32BE = Erlang::ETF::Term::UINT32BE
 
-      uint16be :num_free, always: -> { free_vars.size }
-
-      term :pid # pid
-
-      term :mod # atom, small_atom
-
-      term :index # small_integer, integer
-
-      term :uniq # small_integer, integer
-
-      term :free_vars, type: :array
-
-      deserialize do |buffer|
-        num_free, = buffer.read(BYTES_16).unpack(UINT16BE_PACK)
-        deserialize_pid(buffer)
-        deserialize_mod(buffer)
-        deserialize_index(buffer)
-        deserialize_uniq(buffer)
-        self.free_vars = []
-        num_free.times do
-          self.free_vars << Terms.deserialize(buffer)
+      class << self
+        def [](term, pid = nil, mod = nil, index = nil, uniq = nil, free_vars = nil)
+          return new(term, pid, mod, index, uniq, free_vars)
         end
-        self
+
+        def erlang_load(buffer)
+          num_free, = buffer.read(4).unpack(UINT32BE)
+          pid       = Erlang::ETF.read_term(buffer)
+          mod       = Erlang::ETF.read_term(buffer)
+          index     = Erlang::ETF.read_term(buffer)
+          uniq      = Erlang::ETF.read_term(buffer)
+          free_vars = Array.new(num_free); num_free.times { |i| free_vars[i] = Erlang::ETF.read_term(buffer) }
+          term      = Erlang::Function[pid: Erlang.from(pid), mod: Erlang.from(mod), index: Erlang.from(index), uniq: Erlang.from(uniq), free_vars: Erlang.from(free_vars)]
+          return new(term, pid, mod, index, uniq, free_vars)
+        end
       end
 
-      finalize
+      def initialize(term, pid = nil, mod = nil, index = nil, uniq = nil, free_vars = nil)
+        raise ArgumentError, "term must be of type Erlang::Function" if not term.kind_of?(Erlang::Function) or term.new_function?
+        @term      = term
+        @pid       = pid
+        @mod       = mod
+        @index     = index
+        @uniq      = uniq
+        @free_vars = free_vars
+      end
 
-      def initialize(pid, mod, index, uniq, free_vars = [])
-        self.pid       = pid
-        self.mod       = mod
-        self.index     = index
-        self.uniq      = uniq
-        self.free_vars = free_vars
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << FUN_EXT
+        free_vars = @free_vars || @term.free_vars
+        num_free = free_vars.length
+        buffer << [num_free].pack(UINT32BE)
+        Erlang::ETF.write_term(@pid   || @term.pid,       buffer)
+        Erlang::ETF.write_term(@mod   || @term.mod,       buffer)
+        Erlang::ETF.write_term(@index || @term.index,     buffer)
+        Erlang::ETF.write_term(@uniq  || @term.uniq,      buffer)
+        num_free.times { |i| Erlang::ETF.write_term(free_vars[i], buffer) }
+        return buffer
+      end
+
+      def inspect
+        if @pid.nil? and @mod.nil? and @index.nil? and @uniq.nil? and @free_vars.nil?
+          return super
+        else
+          return "#{self.class}[#{@term.inspect}, #{@pid.inspect}, #{@mod.inspect}, #{@index.inspect}, #{@uniq.inspect}, #{@free_vars.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@pid, @mod, @index, @uniq, @free_vars) if not @pid.nil? or not @mod.nil? or not @index.nil? or not @uniq.nil? or not @free_vars.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
+        end
       end
     end
   end

@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4     | N
-    # --- | ----- | --------
-    # 105 | Arity | Elements
+    # | 1   | 4     | N        |
+    # | --- | ----- | -------- |
+    # | 105 | Arity | Elements |
     #
     # Same as [`SMALL_TUPLE_EXT`] with the exception that `Arity` is an
     # unsigned 4 byte integer in big endian format.
@@ -15,44 +15,55 @@ module Erlang
     # [`LARGE_TUPLE_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#LARGE_TUPLE_EXT
     #
     class LargeTuple
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::LARGE_TUPLE_EXT
+      UINT32BE = Erlang::ETF::Term::UINT32BE
 
-      uint32be :arity, always: -> { elements.size }
-
-      term :elements, type: :array
-
-      deserialize do |buffer|
-        arity, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        self.elements = []
-        arity.times do
-          self.elements << Terms.deserialize(buffer)
+      class << self
+        def [](term, elements = nil)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term, elements)
         end
-        self
+
+        def erlang_load(buffer)
+          arity, = buffer.read(4).unpack(UINT32BE)
+          elements = Array.new(arity)
+          arity.times { |i| elements[i] = Erlang::ETF.read_term(buffer) }
+          tuple = Erlang::Tuple[*elements]
+          return new(tuple, elements)
+        end
       end
 
-      finalize
-
-      def initialize(elements)
-        @elements = elements
+      def initialize(term, elements = nil)
+        raise ArgumentError, "term must be of type Tuple" if not Erlang.is_tuple(term)
+        @term = term
+        @elements = elements.freeze
       end
 
-      def serialize_header(buffer)
-        serialize_tag(buffer)
-        serialize_arity(buffer)
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << LARGE_TUPLE_EXT
+        elements = @elements || @term
+        arity = elements.size
+        buffer << [arity].pack(UINT32BE)
+        elements.each { |element| Erlang::ETF.write_term(element, buffer) }
+        return buffer
       end
 
-      def bert?
-        elements[0].respond_to?(:atom_name) &&
-        elements[0].atom_name == BERT_PREFIX
-      end
-
-      def __ruby_evolve__
-        if bert?
-          ::Erlang::ETF::BERT.evolve(self)
+      def inspect
+        if @elements.nil?
+          return super
         else
-          ::Erlang::Tuple[*elements.map(&:__ruby_evolve__)]
+          return "#{self.class}[#{@term.inspect}, #{@elements.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@elements) if not @elements.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
         end
       end
     end

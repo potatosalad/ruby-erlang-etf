@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | N    | 4   | 4      | 1
-    # --- | ---- | --- | ------ | --------
-    # 103 | Node | ID  | Serial | Creation
+    # | 1   | N    | 4   | 4      | 1        |
+    # | --- | ---- | --- | ------ | -------- |
+    # | 103 | Node | ID  | Serial | Creation |
     #
     # Encode a process identifier object (obtained from [`spawn/3`] or
     # friends). The `ID` and `Creation` fields works just like in
@@ -18,33 +18,60 @@ module Erlang
     # [`PID_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#PID_EXT
     #
     class Pid
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::PID_EXT
+      UINT8    = Erlang::ETF::Term::UINT8
+      UINT32BE = Erlang::ETF::Term::UINT32BE
+      HEAD     = (UINT32BE + UINT32BE + UINT8).freeze
 
-      term :node
+      class << self
+        def [](term, node = nil, id = nil, serial = nil, creation = nil)
+          return new(term, node, id, serial, creation)
+        end
 
-      uint32be :id,     maximum: (1 << 15) - 1
-      uint32be :serial, maximum: (1 << 13) - 1
+        def erlang_load(buffer)
+          node = Erlang::ETF.read_term(buffer)
+          id, serial, creation = buffer.read(9).unpack(HEAD)
+          term = Erlang::Pid[Erlang.from(node), Erlang.from(id), Erlang.from(serial), Erlang.from(creation)]
+          return new(term, node, id, serial, creation)
+        end
+      end
 
-      int8 :creation, maximum: (1 << 2) - 1
-
-      finalize
-
-      def initialize(node, id, serial, creation)
+      def initialize(term, node = nil, id = nil, serial = nil, creation = nil)
+        raise ArgumentError, "term must be of type Erlang::Pid" if not term.kind_of?(Erlang::Pid)
+        @term     = term
         @node     = node
         @id       = id
         @serial   = serial
         @creation = creation
       end
 
-      def __ruby_evolve__
-        ::Erlang::Pid.new(
-          node.__ruby_evolve__,
-          id,
-          serial,
-          creation
-        )
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << PID_EXT
+        Erlang::ETF.write_term(@node || @term.node, buffer)
+        buffer << [
+          @id       || @term.id,
+          @serial   || @term.serial,
+          @creation || @term.creation
+        ].pack(HEAD)
+        return buffer
+      end
+
+      def inspect
+        if @node.nil? and @id.nil? and @serial.nil? and @creation.nil?
+          return super
+        else
+          return "#{self.class}[#{@term.inspect}, #{@node.inspect}, #{@id.inspect}, #{@serial.inspect}, #{@creation.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@node, @id, @serial, @creation) if not @node.nil? or not @id.nil? or not @serial.nil? or not @creation.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
+        end
       end
     end
   end

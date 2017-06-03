@@ -2,46 +2,79 @@ module Erlang
   module ETF
 
     #
-    # 1   | 4     | N
-    # --- | ----- | -----
-    # 116 | Arity | Pairs
+    # | 1   | 4     | N     |
+    # | --- | ----- | ----- |
+    # | 116 | Arity | Pairs |
     #
-    # The Size specifies the number of key-values Pairs that
-    # follows the size descriptor.
+    # `MAP_EXT` encodes a map. The `Arity` field is an unsigned 4 byte integer
+    # in big endian format that determines the number of key-value pairs in the
+    # map. Key and value pairs (`Ki => Vi`) are encoded in the `Pairs` section
+    # in the following order: `K1, V1, K2, V2,..., Kn, Vn`. Duplicate keys are
+    # **not allowed** within the same map.
     #
     # (see [`MAP_EXT`])
     #
     # [`MAP_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#MAP_EXT
     #
     class Map
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::MAP_EXT
+      UINT32BE = Erlang::ETF::Term::UINT32BE
 
-      uint32be :size, always: -> { keys.size }
-
-      term :keys,   type: :array
-      term :values, type: :array
-
-      deserialize do |buffer|
-        size, = buffer.read(BYTES_32).unpack(UINT32BE_PACK)
-        self.keys, self.values = [], []
-        size.times do
-          self.keys   << Terms.deserialize(buffer)
-          self.values << Terms.deserialize(buffer)
+      class << self
+        def [](term, pairs = nil)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term, pairs)
         end
-        self
+
+        def erlang_load(buffer)
+          arity, = buffer.read(4).unpack(UINT32BE)
+          pairs = Array.new(arity * 2)
+          (arity * 2).times { |i| pairs[i] = Erlang::ETF.read_term(buffer) }
+          map = Erlang::Map[*pairs]
+          return new(map, pairs)
+        end
       end
 
-      finalize
-
-      def initialize(keys, values)
-        @keys   = keys
-        @values = values
+      def initialize(term, pairs = nil)
+        raise ArgumentError, "term must be of type Map" if not Erlang.is_map(term)
+        @term = term
+        @pairs = pairs.freeze
       end
 
-      def __ruby_evolve__
-        ::Erlang::Map[keys.map(&:__ruby_evolve__).zip(values.map(&:__ruby_evolve__))]
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << MAP_EXT
+        if @pairs
+          arity = @pairs.length.div(2)
+          buffer << [arity].pack(UINT32BE)
+          (arity * 2).times { |i| Erlang::ETF.write_term(@pairs[i], buffer) }
+        else
+          arity = @term.size
+          buffer << [arity].pack(UINT32BE)
+          @term.sort.each { |key, val|
+            Erlang::ETF.write_term(key, buffer)
+            Erlang::ETF.write_term(val, buffer)
+          }
+        end
+        return buffer
+      end
+
+      def inspect
+        if @pairs.nil?
+          return super
+        else
+          return "#{self.class}[#{@term.inspect}, #{@pairs.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@pairs) if not @pairs.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
+        end
       end
     end
   end

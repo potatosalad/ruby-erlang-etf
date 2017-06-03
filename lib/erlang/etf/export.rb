@@ -2,9 +2,9 @@ module Erlang
   module ETF
 
     #
-    # 1   | N1     | N2       | N3
-    # --- | ------ | -------- | -----
-    # 113 | Module | Function | Arity
+    # | 1   | N1     | N2       | N3    |
+    # | --- | ------ | -------- | ----- |
+    # | 113 | Module | Function | Arity |
     #
     # This term is the encoding for external funs: `fun M:F/A`.
     #
@@ -22,30 +22,53 @@ module Erlang
     # [`EXPORT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#EXPORT_EXT
     #
     class Export
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::EXPORT_EXT
+      class << self
+        def [](term, mod = nil, function = nil, arity = nil)
+          return new(term, mod, function, arity)
+        end
 
-      term :mod # atom, small_atom
-
-      term :function # atom, small_atom
-
-      term :arity # small_integer
-
-      finalize
-
-      def initialize(mod, function, arity)
-        self.mod      = mod
-        self.function = function
-        self.arity    = arity
+        def erlang_load(buffer)
+          mod      = Erlang::ETF.read_term(buffer)
+          function = Erlang::ETF.read_term(buffer)
+          arity    = Erlang::ETF.read_term(buffer)
+          term     = Erlang::Export[Erlang.from(mod), Erlang.from(function), Erlang.from(arity)]
+          return new(term, mod, function, arity)
+        end
       end
 
-      def __ruby_evolve__
-        ::Erlang::Export.new(
-          mod.__ruby_evolve__,
-          function.__ruby_evolve__,
-          arity.__ruby_evolve__
-        )
+      def initialize(term, mod = nil, function = nil, arity = nil)
+        raise ArgumentError, "term must be of type Erlang::Export" if not term.kind_of?(Erlang::Export)
+        @term     = term
+        @mod      = mod
+        @function = function
+        @arity    = arity
+      end
+
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << EXPORT_EXT
+        Erlang::ETF.write_term(@mod      || @term.mod,      buffer)
+        Erlang::ETF.write_term(@function || @term.function, buffer)
+        Erlang::ETF.write_term(@arity    || @term.arity,    buffer)
+        return buffer
+      end
+
+      def inspect
+        if @mod.nil? and @function.nil? and @arity.nil?
+          return super
+        else
+          return "#{self.class}[#{@term.inspect}, #{@mod.inspect}, #{@function.inspect}, #{@arity.inspect}]"
+        end
+      end
+
+      def pretty_print(pp)
+        state = [@term]
+        state.push(@mod, @function, @arity) if not @mod.nil? or not @function.nil? or not @arity.nil?
+        return pp.group(1, "#{self.class}[", "]") do
+          pp.breakable ''
+          pp.seplist(state) { |obj| obj.pretty_print(pp) }
+        end
       end
     end
   end

@@ -1,6 +1,17 @@
 language: ruby
+
+sudo: required
+dist: trusty
+
+env:
+  global:
+    - RUBYOPT="-W0"
+
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.1
-env: CI="travis"
+  - 2.4.1
+
+notifications:
+  email: false
+
+before_install:
+  - "gem install bundler -v 1.15.1"

@@ -13,14 +13,29 @@ module Erlang
     # [`NIL_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#NIL_EXT
     #
     class Nil
-      include Term
+      include Erlang::ETF::Term
 
-      uint8 :tag, always: Terms::NIL_EXT
+      class << self
+        def [](term)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term)
+        end
 
-      finalize
+        def erlang_load(buffer)
+          term = Erlang::Nil
+          return new(term)
+        end
+      end
 
-      def __ruby_evolve__
-        []
+      def initialize(term)
+        raise ArgumentError, "term must be of type Erlang::Nil" if not Erlang::Nil.equal?(term)
+        @term = term
+      end
+
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << NIL_EXT
+        return buffer
       end
     end
   end

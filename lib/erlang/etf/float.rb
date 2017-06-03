@@ -1,12 +1,10 @@
-require 'bigdecimal'
-
 module Erlang
   module ETF
 
     #
-    # 1   | 31
-    # --- | ------------
-    # 99  | Float String
+    # | 1   | 31           |
+    # | --- | ------------ |
+    # | 99  | Float String |
     #
     # A float is stored in string format. the format used in sprintf
     # to format the float is "%.20e" (there are more bytes allocated
@@ -22,41 +20,47 @@ module Erlang
     # [`FLOAT_EXT`]: http://erlang.org/doc/apps/erts/erl_ext_dist.html#FLOAT_EXT
     #
     class Float
-      include Term
+      include Erlang::ETF::Term
 
-      FLOAT_STRING_FORMAT = "%.20e".freeze
+      class << self
+        def [](term, float_string = nil)
+          return term if term.kind_of?(Erlang::ETF::Term)
+          term = Erlang.from(term)
+          return new(term, float_string)
+        end
 
-      uint8 :tag, always: Terms::FLOAT_EXT
-
-      string :float_string
-
-      undef serialize_float_string
-      def serialize_float_string(buffer)
-        if float_string.is_a?(::BigDecimal)
-          buffer << (FLOAT_STRING_FORMAT % float_string).ljust(31, "\000")
-        else
-          buffer << float_string
+        def erlang_load(buffer)
+          float_string = buffer.read(31)
+          term = Erlang::Float[float_string.byteslice(0, float_string.index("\0")), old: true]
+          return new(term, float_string)
         end
       end
 
-      undef deserialize_float_string
-      def deserialize_float_string(buffer)
-        self.float_string = buffer.read(31)
-      end
-
-      finalize
-
-      def initialize(float_string)
+      def initialize(term, float_string = nil)
+        raise ArgumentError, "term must be of type Erlang::Float" if not Erlang.is_float(term) or not term.old
+        @term         = term
         @float_string = float_string
       end
 
-      def __ruby_evolve__
-        if float_string.is_a?(::BigDecimal)
-          float_string
+      def erlang_dump(buffer = ::String.new.force_encoding(BINARY_ENCODING))
+        buffer << FLOAT_EXT
+        buffer << (@float_string || to_float_string)
+        return buffer
+      end
+
+      def inspect
+        if @float_string.nil?
+          return "#{self.class}[#{@term.inspect}]"
         else
-          ::BigDecimal.new(float_string.gsub("\000", ""))
+          return "#{self.class}[#{@term.inspect}, #{@float_string.inspect}]"
         end
       end
+
+    private
+      def to_float_string
+        return @term.to_float_string.ljust(31, "\0")
+      end
+
     end
   end
 end
