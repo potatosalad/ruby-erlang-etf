@@ -11,7 +11,7 @@ Erlang [External Term Format](http://erlang.org/doc/apps/erts/erl_ext_dist.html)
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'erlang-etf'
+gem 'erlang-etf', '~> 2.0'
 ```
 
 And then execute:
