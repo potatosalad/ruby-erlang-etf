@@ -8,6 +8,10 @@ class ErlangTest < Minitest::Test
     assert_raises(EOFError) { Erlang.binary_to_term("") }
   end
 
+  def test_binary_to_term_wrong_magic_byte
+    assert_raises(ArgumentError) { Erlang.binary_to_term("\x82") }
+  end
+
   def test_term_to_binary_when_term_cannot_evolve
     assert_raises(ArgumentError) { Erlang.term_to_binary(Object.new) }
   end
