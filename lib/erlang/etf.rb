@@ -274,7 +274,7 @@ module Erlang
 
     # @private
     def self.binary_to_term(buffer, etf)
-      magic = buffer.getc
+      magic = buffer.readchar
       if magic == Erlang::ETF::Term::ERLANG_MAGIC_BYTE
         term = nil
         begin
@@ -287,7 +287,7 @@ module Erlang
         return term
       else
         buffer.ungetc(magic)
-        raise NotImplementedError, "unknown Erlang magic byte #{magic.inspect} (should be #{Erlang::ETF::Term::ERLANG_MAGIC_BYTE.inspect})"
+        raise ArgumentError, "unknown Erlang magic byte #{magic.inspect} (should be #{Erlang::ETF::Term::ERLANG_MAGIC_BYTE.inspect})"
       end
       # mzbuffer.read(1)
       # magic = buffer.read(1)
