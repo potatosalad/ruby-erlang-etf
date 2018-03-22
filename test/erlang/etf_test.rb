@@ -13,7 +13,7 @@ class Erlang::ETFTest < Minitest::Test
   def test_binary_to_term
     assert_equal 0, Erlang::ETF.binary_to_term(StringIO.new([131,97,0].pack('C*')), false)
     assert_equal Erlang::ETF::SmallInteger[0], Erlang::ETF.binary_to_term(StringIO.new([131,97,0].pack('C*')), true)
-    assert_raises(NotImplementedError) { Erlang::ETF.binary_to_term(StringIO.new(""), false) }
+    assert_raises(EOFError) { Erlang::ETF.binary_to_term(StringIO.new(""), false) }
   end
 
   # def test_term_to_binary_with_unknown_term

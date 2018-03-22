@@ -274,7 +274,7 @@ module Erlang
 
     # @private
     def self.binary_to_term(buffer, etf)
-      magic = buffer.getc
+      magic = buffer.readchar
       if magic == Erlang::ETF::Term::ERLANG_MAGIC_BYTE
         term = nil
         begin
